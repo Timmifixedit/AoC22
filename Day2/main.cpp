@@ -61,8 +61,8 @@ struct RPSMove {
 };
 
 
-int main(int argc, char **argv) {
-    auto file = util::getInputFile(argc, argv);
+int main() {
+    auto file = util::getInputFile();
     std::string line;
     unsigned sumA1 = 0;
     unsigned sumA2 = 0;

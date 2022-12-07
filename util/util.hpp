@@ -22,7 +22,7 @@ namespace util {
             return in;
         }
     }
-    auto getInputFile(int argc, char** argv) noexcept -> std::fstream;
+    auto getInputFile() noexcept -> std::fstream;
 
     template<char Delim>
     auto splitString(const std::string &string) -> std::vector<std::string> {
