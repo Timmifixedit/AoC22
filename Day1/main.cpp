@@ -1,25 +1,22 @@
 #include <iostream>
-#include <fstream>
 #include <string>
+#include <vector>
+#include <ranges>
+#include <algorithm>
+#include "../util/util.hpp"
+
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        std::cerr << "please specify a file to load" << std::endl;
-        return 1;
-    }
-
-    std::fstream file(argv[1]);
-    if (not file.is_open()) {
-        std::cerr << "unable to open file '" << argv[1] << "'" << std::endl;
-        return 1;
-    }
-
+    auto file = util::getInputFile(argc, argv);
     std::string line;
     std::size_t sum = 0;
     std::size_t largest = 0;
+    std::vector<std::size_t> sums;
+
     while (std::getline(file, line)) {
         if (line.empty()) {
             std::cout << "current sum: " << sum << std::endl;
+            sums.emplace_back(sum);
             if (sum > largest) {
                 largest = sum;
             }
@@ -32,4 +29,10 @@ int main(int argc, char **argv) {
     }
 
     std::cout << largest << std::endl;
+    std::ranges::sort(sums, std::greater{});
+    for(auto s : sums | std::views::take(3)) {
+        sum += s;
+    }
+
+    std::cout << "sum of the largest 3: " << sum << std::endl;
 }

@@ -10,6 +10,9 @@ else()
     message("Building for release")
 endif ()
 
+include_directories(util)
+file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/util/*.cpp)
+
 file(GLOB_RECURSE DIRS
         LIST_DIRECTORIES True
         ${CMAKE_SOURCE_DIR}/Day*/)
@@ -22,6 +25,6 @@ foreach(DAY ${DIRS})
         get_filename_component(NAME ${EXEC} NAME_WLE)
         set(NAME ${DNAME}_${NAME})
         message(\t${EXEC}\ ->\ target:\ ${NAME})
-        add_executable(${NAME} ${EXEC})
+        add_executable(${NAME} ${EXEC} ${SOURCES})
     endforeach()
 endforeach()
