@@ -14,10 +14,11 @@
 
 namespace util {
     namespace impl {
+        template<char Delim>
         struct Word : std::string {};
 
         template<char Delim>
-        std::istream &operator>>(std::istream &in, Word &word) {
+        std::istream &operator>>(std::istream &in, Word<Delim> &word) {
             std::getline(in, word, Delim);
             return in;
         }
@@ -27,7 +28,7 @@ namespace util {
     template<char Delim>
     auto splitString(const std::string &string) -> std::vector<std::string> {
         std::istringstream iss(string);
-        using iter = std::istream_iterator<impl::Word>;
+        using iter = std::istream_iterator<impl::Word<Delim>>;
         std::vector<std::string> ret(iter{iss}, iter{});
         return ret;
     }
