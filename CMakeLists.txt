@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
 project(AoC22)
+
+message("Fetching iterators library...")
+include(FetchContent)
+FetchContent_Declare(iterators
+        GIT_REPOSITORY https://github.com/Timmifixedit/IteratorTools)
+FetchContent_MakeAvailable(iterators)
+include_directories(${iterators_SOURCE_DIR})
+message("successfully fetched iterators library")
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -mtune=native -march=native")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
