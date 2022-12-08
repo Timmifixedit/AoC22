@@ -19,7 +19,9 @@ namespace util {
 
         template<char Delim>
         std::istream &operator>>(std::istream &in, Word<Delim> &word) {
-            std::getline(in, word, Delim);
+            Word<Delim> part;
+            while (std::getline(in, part, Delim) && part.empty()) {}
+            word = part;
             return in;
         }
     }
