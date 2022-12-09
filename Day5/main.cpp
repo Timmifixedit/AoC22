@@ -29,8 +29,8 @@ void moveStack(stack_vector &stacks, unsigned num, unsigned from, unsigned to) {
 }
 
 
-int main() {
-    auto file = util::getInputFile();
+int main(int argc, char **argv) {
+    auto file = util::getInputFile(argc, argv);
     std::string line;
     std::vector<std::string> boxes;
     while (std::getline(file, line) && line.find_first_of('[') != std::string::npos) {

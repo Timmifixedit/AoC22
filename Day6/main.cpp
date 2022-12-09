@@ -6,8 +6,8 @@
 #include "../util/util.hpp"
 
 
-int main() {
-    auto file = util::getInputFile();
+int main(int argc, char **argv) {
+    auto file = util::getInputFile(argc, argv);
     std::string line;
     std::getline(file, line);
     bimap::bidirectional_map<char, std::size_t, std::unordered_map, std::map> markerChars;

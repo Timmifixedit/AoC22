@@ -45,8 +45,8 @@ char findBadge(const std::array<std::string, 3> &team) {
 }
 
 
-int main() {
-    auto file = util::getInputFile();
+int main(int argc, char **argv) {
+    auto file = util::getInputFile(argc, argv);
     std::string line;
     unsigned sum = 0;
     unsigned badgeSum = 0;

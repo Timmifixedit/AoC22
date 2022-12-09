@@ -6,8 +6,8 @@
 #include "../util/util.hpp"
 
 
-int main() {
-    auto file = util::getInputFile();
+int main(int argc, char **argv) {
+    auto file = util::getInputFile(argc, argv);
     std::string line;
     std::size_t sum = 0;
     std::size_t largest = 0;
