@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 project(AoC22)
 include(FetchContent)
 
@@ -44,3 +44,4 @@ foreach(DAY ${DIRS})
         target_compile_definitions(${NAME} PRIVATE __IFILE__=${INPUT_FILE})
     endforeach()
 endforeach()
+
