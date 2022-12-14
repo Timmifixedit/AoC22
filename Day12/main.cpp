@@ -113,9 +113,13 @@ concept ExpandFunction = requires(E instance, SearchNode<T> node) {
     requires std::convertible_to<std::ranges::range_value_t<decltype(instance(node.state))>, T>;
 };
 
-template<typename T, ExpandFunction<T> ExpFun, HeuristicFunction<T> HFun>
-auto aStar(const NodePtr<T> &start, const NodePtr<T> &goal,
-           const ExpFun &expand, HFun &&h, std::optional<unsigned> upperBound) -> NodePtr<T> {
+template<typename G, typename T>
+concept GoalTest = requires(G instance, T state) {
+    { instance(state) } -> std::convertible_to<bool>;
+};
+
+template<typename T, GoalTest<T> GoalFun, ExpandFunction<T> ExpFun, HeuristicFunction<T> HFun>
+auto aStar(const NodePtr<T> &start, const GoalFun &goalTest, const ExpFun &expand, HFun &&h) -> NodePtr<T> {
     using NPtr = NodePtr<T>;
     std::vector<NPtr> visited;
     NodeCompare<T, HFun> compare(std::forward<HFun>(h));
@@ -123,12 +127,8 @@ auto aStar(const NodePtr<T> &start, const NodePtr<T> &goal,
     while (not fringe.empty()) {
         auto current = std::move(const_cast<NPtr &>(fringe.top()));
         fringe.pop();
-        if (*current == *goal) {
+        if (goalTest(current->state)) {
             return current;
-        }
-
-        if (upperBound.has_value() && current->pathCost >= *upperBound) {
-            return nullptr;
         }
 
         auto res = std::find_if(visited.begin(), visited.end(),
@@ -149,16 +149,21 @@ auto aStar(const NodePtr<T> &start, const NodePtr<T> &goal,
     return nullptr;
 }
 
-unsigned shortestPathToGoal(std::size_t start, const Field &field, std::optional<unsigned> upperBound = {}) {
+template<typename E>
+concept ElevationConstraint = requires(E instance, Field::HType height) {
+    { instance(height, height) } -> std::convertible_to<bool>;
+};
+
+template<GoalTest<std::size_t> GoalFun, ElevationConstraint ElevationTest, HeuristicFunction<std::size_t> H>
+unsigned shortestPath(std::size_t start, const Field &field, const GoalFun &goalTest, const ElevationTest &elevationTest, H &&h) {
     auto startNode = std::make_shared<SearchNode<std::size_t>>(start, nullptr);
-    auto goalNode = std::make_shared<SearchNode<std::size_t>>(field.goal, nullptr);
-    auto expand = [&field](std::size_t pos) {
+    auto expand = [&field, &elevationTest](std::size_t pos) {
         auto height = field.terrain[pos];
         std::array candidates = {pos - 1, pos + 1, pos - field.stride, pos + field.stride};
         std::vector<std::size_t> neighbors;
         neighbors.reserve(candidates.size());
         for (auto c : candidates) {
-            if (c < field.terrain.size() && field.terrain[c] - height <= 1) {
+            if (c < field.terrain.size() && elevationTest(field.terrain[c], height)) {
                 neighbors.emplace_back(c);
             }
         }
@@ -166,13 +171,9 @@ unsigned shortestPathToGoal(std::size_t start, const Field &field, std::optional
         return neighbors;
     };
 
-    auto res = aStar(startNode, goalNode, expand, [&field](auto a) { return field.dist(a, field.goal); }, upperBound);
+    auto res = aStar(startNode, goalTest, expand, std::forward<H>(h));
     if (res != nullptr) {
         return res->pathCost;
-    }
-
-    if (upperBound.has_value()) {
-        return *upperBound;
     }
 
     std::cerr << "unsolvable" << std::endl;
@@ -183,15 +184,12 @@ unsigned shortestPathToGoal(std::size_t start, const Field &field, std::optional
 int main(int argc, char **argv) {
     auto file = util::getInputFile(argc, argv);
     const Field field(file);
-    auto shortest = shortestPathToGoal(field.start, field);
+    auto shortest = shortestPath(field.start, field, [d = field.goal](auto idx) { return idx == d; },
+                                 [](auto newHeight, auto oldHeight) { return newHeight - oldHeight <= 1; },
+                                 [&field](auto idx) { return field.dist(idx, field.goal); });
     std::cout << "ex 1: " << shortest << std::endl;
-    for (auto s : field.startingPoints) {
-        auto res = shortestPathToGoal(s, field, shortest);
-        if (res < shortest) {
-            std::cout << "new best " << res << std::endl;
-            shortest = res;
-        }
-    }
-
+    shortest = shortestPath(field.goal, field, [&field](auto idx) { return field.terrain[idx] == 0; },
+                            [](auto newHeight, auto oldHeight) { return newHeight - oldHeight >= -1; },
+                            [](auto) { return 0; });
     std::cout << "ex 2: " << shortest << std::endl;
 }
